@@ -29,4 +29,3 @@ print(l)
 
 o = 55
 print(f"This is my grade mark : {o}" )
-
