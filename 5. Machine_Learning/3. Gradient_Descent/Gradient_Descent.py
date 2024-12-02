@@ -11,6 +11,7 @@ def Gradient_Descent(x,y):
         b_der = -(2/n)*(y-y_predicted)
         m_curr = m_curr - learningRate * m_der
         b_der = b_der - learningRate * b_der
+        print("m {},b {}, iteration{}".format(m_curr,b_curr,i))
 
 x = nb.array([1,2,3,4,5])
 y = nb.array([5,7,9,11,13])
