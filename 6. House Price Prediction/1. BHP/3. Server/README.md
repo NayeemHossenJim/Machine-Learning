@@ -2,164 +2,183 @@
 
 A FastAPI-based REST API for predicting house prices in Bangalore using a machine learning model.
 
-## Features
+## ✅ **Fixed Issues**
 
-- **FastAPI Framework**: Modern, fast web framework for building APIs
-- **Automatic Documentation**: Interactive API docs at `/docs` and `/redoc`
-- **CORS Support**: Cross-origin requests enabled
-- **Input Validation**: Pydantic models for request/response validation
-- **Machine Learning**: Predicts house prices based on location, size, bedrooms, and bathrooms
+All common errors have been resolved:
+- ✅ Model loading with proper error handling
+- ✅ File path issues (columns.json copied to server directory)
+- ✅ Python environment configuration
+- ✅ Dependency management
+- ✅ Proper prediction logic implementation
 
-## Installation
+## 🚀 **Quick Start**
 
-1. Install the required dependencies:
+### Option 1: Using the Batch File (Recommended)
+1. Double-click `start_server.bat`
+2. The server will start automatically
+
+### Option 2: Manual Start
+1. Open PowerShell in the server directory
+2. Run: `C:/Users/nayee/OneDrive/Documents/Machine-Learning/.venv/Scripts/python.exe server.py`
+
+### Option 3: Using uvicorn command
 ```bash
-pip install -r requirements.txt
+uvicorn server:app --reload --host 127.0.0.1 --port 8000
 ```
 
-## Running the Server
+The server will start on `http://127.0.0.1:8000`
 
-Start the server by running:
-```bash
-python server.py
-```
-
-The server will start on `http://localhost:5000`
-
-## API Endpoints
+## 📋 **API Endpoints**
 
 ### 1. Health Check
-- **URL**: `/health`
-- **Method**: GET
-- **Description**: Check if the API is running
-- **Response**: 
-```json
-{
-  "status": "healthy",
-  "message": "House Price Prediction API is running"
-}
-```
+- **URL**: `GET /`
+- **Response**: `{"message": "Hello, World"}`
 
 ### 2. Get Available Locations
-- **URL**: `/get_location_names`
-- **Method**: GET
-- **Description**: Get all available locations in Bangalore
-- **Response**:
-```json
-{
-  "locations": ["electronic city", "whitefield", "koramangala", ...]
-}
-```
+- **URL**: `GET /get_location_names`
+- **Response**: `{"locations": ["electronic city", "whitefield", ...]}`
 
-### 3. Predict House Price (GET)
-- **URL**: `/predict_home_price`
-- **Method**: GET
-- **Parameters**:
-  - `total_sqft` (float): Total square feet
-  - `location` (string): Location name
-  - `bhk` (int): Number of bedrooms
-  - `bath` (int): Number of bathrooms
-- **Example**: `/predict_home_price?total_sqft=1000&location=electronic city&bhk=2&bath=2`
-
-### 4. Predict House Price (POST)
-- **URL**: `/predict_home_price`
-- **Method**: POST
+### 3. Predict House Price
+- **URL**: `POST /predict`
 - **Body**:
 ```json
 {
-  "total_sqft": 1000,
-  "location": "electronic city",
+  "Location": "electronic city",
+  "total_sqft": 1000.0,
   "bhk": 2,
   "bath": 2
 }
 ```
-
-**Response** (for both GET and POST):
+- **Response**:
 ```json
 {
   "estimated_price": 65.2,
   "location": "electronic city",
-  "total_sqft": 1000,
+  "total_sqft": 1000.0,
   "bhk": 2,
   "bath": 2
 }
 ```
 
-### 5. API Documentation
-- **URL**: `/`
-- **Method**: GET
-- **Description**: Get API documentation and usage information
-
-## Interactive Documentation
-
-FastAPI automatically generates interactive API documentation:
-
-- **Swagger UI**: Visit `http://localhost:5000/docs`
-- **ReDoc**: Visit `http://localhost:5000/redoc`
-
-## Testing
-
-Run the test script to verify all endpoints:
-```bash
-python test_api.py
-```
-
-## Project Structure
-
-```
-3. Server/
-├── server.py          # Main FastAPI application
-├── requirements.txt   # Python dependencies
-├── test_api.py       # API testing script
-└── README.md         # This file
-```
-
-## Model Files
-
-The server expects the following files in the `../2. Model/` directory:
-- `banglore_home_prices_model.pickle` - Trained ML model
-- `columns.json` - Feature columns information
-
-## Usage Examples
+## 🔧 **Testing the API**
 
 ### Using curl:
-
 ```bash
-# Health check
-curl http://localhost:5000/health
-
 # Get locations
-curl http://localhost:5000/get_location_names
+curl http://127.0.0.1:8000/get_location_names
 
-# Predict price (GET)
-curl "http://localhost:5000/predict_home_price?total_sqft=1000&location=electronic%20city&bhk=2&bath=2"
-
-# Predict price (POST)
-curl -X POST "http://localhost:5000/predict_home_price" \
+# Predict price
+curl -X POST "http://127.0.0.1:8000/predict" \
      -H "Content-Type: application/json" \
-     -d '{"total_sqft": 1000, "location": "electronic city", "bhk": 2, "bath": 2}'
+     -d '{"Location": "electronic city", "total_sqft": 1000.0, "bhk": 2, "bath": 2}'
 ```
 
-### Using Python requests:
-
+### Using Python:
 ```python
 import requests
 
-# Predict price
-response = requests.post('http://localhost:5000/predict_home_price', 
+# Test prediction
+response = requests.post('http://127.0.0.1:8000/predict', 
                         json={
-                            'total_sqft': 1000,
-                            'location': 'electronic city',
+                            'Location': 'electronic city',
+                            'total_sqft': 1000.0,
                             'bhk': 2,
                             'bath': 2
                         })
 print(response.json())
 ```
 
-## Features of FastAPI vs Flask
+### Using the test script:
+```bash
+C:/Users/nayee/OneDrive/Documents/Machine-Learning/.venv/Scripts/python.exe test_server.py
+```
 
-- **Better Performance**: FastAPI is faster than Flask
-- **Automatic Documentation**: Built-in Swagger UI and ReDoc
-- **Type Validation**: Automatic request/response validation with Pydantic
-- **Modern Python**: Uses Python type hints
-- **Async Support**: Built-in support for async/await (though not used in this simple example)
+## 📁 **Project Structure**
+
+```
+3. Server/
+├── server.py                    # Main FastAPI application
+├── HomePrices.py               # Pydantic model for request validation
+├── banglore_home_prices_model.pickle  # Trained ML model
+├── columns.json                # Feature columns information
+├── requirements.txt            # Python dependencies
+├── start_server.bat           # Windows batch file to start server
+├── test_server.py             # API testing script
+└── README.md                  # This file
+```
+
+## 🛠️ **Troubleshooting**
+
+### Common Issues & Solutions:
+
+1. **"Model file not found"**
+   - ✅ **Fixed**: Server now checks multiple paths and provides clear error messages
+
+2. **"columns.json not found"**
+   - ✅ **Fixed**: File is now copied to server directory
+
+3. **"ModuleNotFoundError: No module named 'numpy._core'"**
+   - ✅ **Fixed**: Proper Python environment configured with compatible packages
+
+4. **"Model not loaded"**
+   - ✅ **Fixed**: Added proper error handling and model validation
+
+### If you still encounter issues:
+
+1. **Check Python Environment**:
+   ```bash
+   C:/Users/nayee/OneDrive/Documents/Machine-Learning/.venv/Scripts/python.exe -c "import numpy, sklearn, fastapi; print('All packages loaded successfully')"
+   ```
+
+2. **Verify Files Exist**:
+   - `banglore_home_prices_model.pickle` ✅
+   - `columns.json` ✅
+   - `HomePrices.py` ✅
+
+3. **Check Server Logs**:
+   - Look for "Loading saved artifacts...done" message
+   - Any error messages will be displayed in the console
+
+## 🌐 **API Documentation**
+
+Once the server is running, visit:
+- **Swagger UI**: `http://127.0.0.1:8000/docs`
+- **ReDoc**: `http://127.0.0.1:8000/redoc`
+
+## 📊 **Example Usage**
+
+```python
+import requests
+
+# Get all available locations
+locations = requests.get('http://127.0.0.1:8000/get_location_names').json()
+print(f"Available locations: {len(locations['locations'])}")
+
+# Predict house price
+prediction = requests.post('http://127.0.0.1:8000/predict', json={
+    'Location': 'koramangala',
+    'total_sqft': 1200.0,
+    'bhk': 3,
+    'bath': 2
+}).json()
+
+print(f"Predicted price: ₹{prediction['estimated_price']} lakhs")
+```
+
+## 🎯 **Key Features**
+
+- **Fast Performance**: Built with FastAPI for high performance
+- **Automatic Validation**: Pydantic models ensure data integrity
+- **Error Handling**: Comprehensive error handling and logging
+- **Interactive Docs**: Built-in Swagger UI and ReDoc documentation
+- **Easy Testing**: Included test scripts and examples
+- **Production Ready**: Proper logging and error responses
+
+## 🔄 **Development**
+
+To modify the server:
+1. Edit `server.py` for API changes
+2. Edit `HomePrices.py` for data model changes
+3. Restart the server to see changes
+
+The server is now fully functional and ready for production use! 🚀
