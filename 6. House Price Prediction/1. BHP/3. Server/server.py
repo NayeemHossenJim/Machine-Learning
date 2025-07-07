@@ -1,17 +1,52 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import pickle
 import json
 import numpy as np
 import os
+import uvicorn
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI(
+    title="House Price Prediction API",
+    description="API for predicting house prices in Bangalore",
+    version="1.0.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global variables to store model and data columns
 __model = None
 __data_columns = None
 __locations = None
+
+# Pydantic models for request/response
+class PredictionRequest(BaseModel):
+    total_sqft: float
+    location: str
+    bhk: int
+    bath: int
+
+class PredictionResponse(BaseModel):
+    estimated_price: float
+    location: str
+    total_sqft: float
+    bhk: int
+    bath: int
+
+class LocationsResponse(BaseModel):
+    locations: list
+
+class HealthResponse(BaseModel):
+    status: str
+    message: str
 
 def get_estimated_price(location, sqft, bhk, bath):
     """
@@ -66,60 +101,54 @@ def get_data_columns():
     """
     return __data_columns
 
-@app.route('/get_location_names', methods=['GET'])
+@app.get('/get_location_names', response_model=LocationsResponse)
 def get_location_names_route():
     """
     API endpoint to get all available locations
     """
-    response = jsonify({
-        'locations': get_location_names()
-    })
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return LocationsResponse(locations=get_location_names())
 
-@app.route('/predict_home_price', methods=['GET', 'POST'])
-def predict_home_price():
+@app.post('/predict_home_price', response_model=PredictionResponse)
+def predict_home_price_post(request: PredictionRequest):
     """
-    API endpoint to predict house price
-    Expected parameters: total_sqft, location, bhk, bath
+    API endpoint to predict house price using POST method
     """
-    if request.method == 'POST':
-        data = request.get_json()
-        total_sqft = float(data['total_sqft'])
-        location = data['location']
-        bhk = int(data['bhk'])
-        bath = int(data['bath'])
-    else:  # GET request
-        total_sqft = float(request.args.get('total_sqft'))
-        location = request.args.get('location')
-        bhk = int(request.args.get('bhk'))
-        bath = int(request.args.get('bath'))
+    estimated_price = get_estimated_price(request.location, request.total_sqft, request.bhk, request.bath)
+    
+    return PredictionResponse(
+        estimated_price=estimated_price,
+        location=request.location,
+        total_sqft=request.total_sqft,
+        bhk=request.bhk,
+        bath=request.bath
+    )
 
+@app.get('/predict_home_price', response_model=PredictionResponse)
+def predict_home_price_get(total_sqft: float, location: str, bhk: int, bath: int):
+    """
+    API endpoint to predict house price using GET method
+    """
     estimated_price = get_estimated_price(location, total_sqft, bhk, bath)
     
-    response = jsonify({
-        'estimated_price': estimated_price,
-        'location': location,
-        'total_sqft': total_sqft,
-        'bhk': bhk,
-        'bath': bath
-    })
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return PredictionResponse(
+        estimated_price=estimated_price,
+        location=location,
+        total_sqft=total_sqft,
+        bhk=bhk,
+        bath=bath
+    )
 
-@app.route('/health', methods=['GET'])
+@app.get('/health', response_model=HealthResponse)
 def health_check():
     """
     Health check endpoint
     """
-    response = jsonify({
-        'status': 'healthy',
-        'message': 'House Price Prediction API is running'
-    })
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return HealthResponse(
+        status='healthy',
+        message='House Price Prediction API is running'
+    )
 
-@app.route('/', methods=['GET'])
+@app.get('/')
 def home():
     """
     Home endpoint with API documentation
@@ -143,11 +172,9 @@ def home():
         }
     }
     
-    response = jsonify(api_docs)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return api_docs
 
 if __name__ == "__main__":
-    print("Starting Python Flask Server For Home Price Prediction...")
+    print("Starting Python FastAPI Server For Home Price Prediction...")
     load_saved_artifacts()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
