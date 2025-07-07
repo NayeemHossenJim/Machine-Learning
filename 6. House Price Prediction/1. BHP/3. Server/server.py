@@ -1,12 +1,57 @@
 # 1. Library imports
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from HomePrices import HomePrices
 import pickle
+import json
+import numpy as np
+
 # 2. Create the app object
 app = FastAPI()
-pickle_in = open("banglore_home_prices_model.pickle","rb")
-classifier=pickle.load(pickle_in)
+
+# Global variables
+__model = None
+__data_columns = None
+__locations = None
+
+def load_saved_artifacts():
+    """Load the trained model and data columns"""
+    print("Loading saved artifacts...start")
+    global __data_columns, __locations, __model
+    
+    # Load columns data
+    with open("columns.json", "r") as f:
+        __data_columns = json.load(f)['data_columns']
+        __locations = __data_columns[3:]  # first 3 columns are sqft, bath, bhk
+    
+    # Load the trained model
+    with open("banglore_home_prices_model.pickle", "rb") as f:
+        __model = pickle.load(f)
+    
+    print("Loading saved artifacts...done")
+
+def get_estimated_price(location, sqft, bath, bhk):
+    """Predict house price based on location, sqft, bath, bhk"""
+    try:
+        loc_index = __data_columns.index(location.lower())
+    except:
+        loc_index = -1
+    
+    x = np.zeros(len(__data_columns))
+    x[0] = sqft
+    x[1] = bath
+    x[2] = bhk
+    if loc_index >= 0:
+        x[loc_index] = 1
+    
+    return round(__model.predict([x])[0], 2)
+
+def get_location_names():
+    """Get all available location names"""
+    return __locations
+
+# Initialize the model when the server starts
+load_saved_artifacts()
 
 # 3. Index route, opens automatically on http://127.0.0.1:8000
 @app.get('/')
@@ -19,7 +64,13 @@ def index():
 def get_name(name: str):
     return {'Welcome To Krish Youtube Channel': f'{name}'}
 
-# 3. Expose the prediction functionality, make a prediction from the passed
+# 5. Get available locations
+@app.get('/get_location_names')
+def get_location_names_route():
+    """Get all available location names"""
+    return {'locations': get_location_names()}
+
+# 6. Expose the prediction functionality, make a prediction from the passed
 #    JSON data and return the predicted house price
 @app.post('/predict')
 def predict_house_price(data: HomePrices):
@@ -29,21 +80,20 @@ def predict_house_price(data: HomePrices):
     bhk = data['bhk']
     bath = data['bath']
     
-    # You'll need to implement the actual prediction logic based on your model
-    # This is a placeholder - replace with your actual prediction logic
-    prediction = classifier.predict([[total_sqft, bath, bhk]])  # Adjust based on your model's expected input
+    # Get the estimated price using the trained model
+    estimated_price = get_estimated_price(location, total_sqft, bath, bhk)
     
     return {
-        'estimated_price': float(prediction[0]),
+        'estimated_price': estimated_price,
         'location': location,
         'total_sqft': total_sqft,
         'bhk': bhk,
         'bath': bath
     }
 
-# 5. Run the API with uvicorn
+# 7. Run the API with uvicorn
 #    Will run on http://127.0.0.1:8000
 if __name__ == '__main__':
     uvicorn.run(app, host='127.0.0.1', port=8000)
     
-#uvicorn app:app --reload
+#uvicorn server:app --reload
