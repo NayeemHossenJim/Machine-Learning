@@ -15,15 +15,23 @@ with open("location_encoder.pickle","rb") as f:
 def index():
     return {'message': 'Hello, World'}
 
+@app.get('/locations')
+def get_available_locations():
+    return {'available_locations': location_encoder.classes_.tolist()}
+
 @app.get('/{name}')
 def get_name(name: str):
-    return {'Hello Friend Checking Out haha': f'{name}'}
+    return {'Hello My name is': f'{name}'}
 
 @app.post('/predict')
 def predict_home_price(data: HomePriceInput):
     data = data.model_dump()
     
     try:
+        # Check if location exists in encoder
+        if data['location'] not in location_encoder.classes_:
+            return {'error': f'Unknown location: {data["location"]}. Available locations: {location_encoder.classes_.tolist()}'}
+        
         # Encode location string to number
         location_encoded = location_encoder.transform([data['location']])[0]
         total_sqft = data['total_sqft']
