@@ -1,4 +1,3 @@
-import uvicorn
 from fastapi import FastAPI
 from HomePrice import HomePriceInput
 import pickle
@@ -26,10 +25,5 @@ def Predict_HomePrice(data:HomePriceInput):
     prediction = Model.predict([[location, total_sqft, bath, bhk]])
     prediction = round(prediction[0], 2)
     return {'prediction': prediction}
-
-# 5. Run the API with uvicorn
-#    Will run on http://127.0.0.1:8000
-if __name__ == '__main__':
-    uvicorn.run(app, host='127.0.0.1', port=8000)
-    
-#uvicorn app:app --reload
+ 
+#uvicorn main:app --reload

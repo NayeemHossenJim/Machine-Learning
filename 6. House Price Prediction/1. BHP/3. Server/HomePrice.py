@@ -1,8 +1,7 @@
-import pydantic 
 from pydantic import BaseModel
 
 class HomePriceInput(BaseModel):
-    location: str
+    location: int
     total_sqft: float
     bath: int
     bhk: int    
