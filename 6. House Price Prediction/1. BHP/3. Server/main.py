@@ -1,3 +1,5 @@
+import uvicorn
+import pickle
 from fastapi import FastAPI
 
 app = FastAPI()
