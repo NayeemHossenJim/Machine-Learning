@@ -12,7 +12,7 @@
     --dark-bg: #0a0a0a;
     --card-bg: rgba(255, 255, 255, 0.05);
     --glass-bg: rgba(255, 255, 255, 0.1);
-    --text-primary: #ffffff;
+    --text-primary: #000000;
     --text-secondary: #b0b0b0;
     --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
