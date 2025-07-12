@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run FastAPI House Price Prediction Server",
+			"type": "shell",
+			"command": "C:/msys64/ucrt64/bin/python3.exe",
+			"args": [
+				"main.py"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
