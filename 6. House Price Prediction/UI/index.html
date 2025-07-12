@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore House Price Predictor</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background">
+        <div class="stars"></div>
+        <div class="nebula"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+            <div class="shape shape-5"></div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-home"></i>
+                <span class="logo-text">PricePredict</span>
+            </div>
+            <h1 class="main-title">
+                <span class="title-word">Bangalore</span>
+                <span class="title-word">House</span>
+                <span class="title-word">Price</span>
+                <span class="title-word">Predictor</span>
+            </h1>
+            <p class="subtitle">Powered by Advanced Machine Learning</p>
+        </header>
+
+        <!-- Prediction Form -->
+        <div class="prediction-container">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Get Your Property Valuation</h2>
+                    <div class="header-line"></div>
+                </div>
+
+                <form id="predictionForm" class="prediction-form">
+                    <!-- Location Input -->
+                    <div class="input-group">
+                        <label for="location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Location
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="location" name="location" required>
+                                <option value="">Select Location</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Square Feet Input -->
+                    <div class="input-group">
+                        <label for="sqft">
+                            <i class="fas fa-ruler"></i>
+                            Total Square Feet
+                        </label>
+                        <input type="number" id="sqft" name="sqft" placeholder="e.g., 1200" min="100" step="1" required>
+                        <div class="input-highlight"></div>
+                    </div>
+
+                    <!-- Bathrooms Input -->
+                    <div class="input-group">
+                        <label for="bath">
+                            <i class="fas fa-bath"></i>
+                            Bathrooms
+                        </label>
+                        <div class="number-input">
+                            <button type="button" class="number-btn minus" data-target="bath">-</button>
+                            <input type="number" id="bath" name="bath" value="1" min="1" max="10" readonly>
+                            <button type="button" class="number-btn plus" data-target="bath">+</button>
+                        </div>
+                    </div>
+
+                    <!-- BHK Input -->
+                    <div class="input-group">
+                        <label for="bhk">
+                            <i class="fas fa-bed"></i>
+                            BHK (Bedrooms)
+                        </label>
+                        <div class="number-input">
+                            <button type="button" class="number-btn minus" data-target="bhk">-</button>
+                            <input type="number" id="bhk" name="bhk" value="1" min="1" max="10" readonly>
+                            <button type="button" class="number-btn plus" data-target="bhk">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="predict-btn" id="predictBtn">
+                        <span class="btn-text">Predict Price</span>
+                        <div class="btn-loader">
+                            <div class="loader-spinner"></div>
+                        </div>
+                        <i class="fas fa-magic btn-icon"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Result Display -->
+            <div class="result-container" id="resultContainer">
+                <div class="result-header">
+                    <h3>Predicted Price</h3>
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="price-display">
+                    <span class="currency">₹</span>
+                    <span class="price-value" id="priceValue">0.00</span>
+                    <span class="price-unit">Lakhs</span>
+                </div>
+                <div class="result-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Location:</span>
+                        <span class="detail-value" id="resultLocation">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Area:</span>
+                        <span class="detail-value" id="resultSqft">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Configuration:</span>
+                        <span class="detail-value" id="resultConfig">-</span>
+                    </div>
+                </div>
+                <div class="confidence-meter">
+                    <div class="confidence-label">Prediction Confidence</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill"></div>
+                    </div>
+                    <div class="confidence-percentage">95%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features-section">
+            <h2 class="section-title">Why Choose Our Predictor?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>AI-Powered</h3>
+                    <p>Advanced machine learning algorithms trained on thousands of real estate transactions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Market Accurate</h3>
+                    <p>Real-time market data integration for the most accurate price predictions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lightning-bolt"></i>
+                    </div>
+                    <h3>Instant Results</h3>
+                    <p>Get property valuations in milliseconds with our optimized prediction engine</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <p class="loading-text">Analyzing market data...</p>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Prediction Error</h3>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <p id="errorMessage">An error occurred while predicting the price.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
