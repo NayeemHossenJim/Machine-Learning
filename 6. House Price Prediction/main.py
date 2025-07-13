@@ -6,13 +6,11 @@ import json
 import numpy as np
 import uvicorn
 
-# Initialize FastAPI app
 app = FastAPI(
     title="Bangalore House Price Prediction API",
     version="1.0.0"
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,12 +19,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global variables for model and data
 model = None
 data_columns = None
 locations = None
 
-# Pydantic models for request/response
 class HousePredictionRequest(BaseModel):
     location: str
     sqft: float
@@ -44,24 +40,21 @@ class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
 
-# Load model and data on startup
 @app.on_event("startup")
 async def load_model():
     global model, data_columns, locations
     try:
-        # Load the trained model and column information
         with open('banglore_home_prices_model.pickle', 'rb') as f:
             model = pickle.load(f)
         
         with open('columns.json', 'r') as f:
             data_columns = json.load(f)['data_columns']
         
-        locations = data_columns[3:]  # Extract locations
+        locations = data_columns[3:]
     except Exception as e:
         print(f"Error loading model: {e}")
         raise e
 
-# Predict house price
 def predict_price(location: str, sqft: float, bath: int, bhk: int) -> float:
     loc_index = -1
     location_lower = location.lower()
@@ -82,7 +75,6 @@ def predict_price(location: str, sqft: float, bath: int, bhk: int) -> float:
     prediction = model.predict([x])[0]
     return round(prediction, 2)
 
-# API Endpoints
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     return HealthResponse(
@@ -94,8 +86,6 @@ async def health_check():
 async def predict_house_price(request: HousePredictionRequest):
     if not model:
         raise HTTPException(status_code=503, detail="Model not loaded")
-    
-    # Check if the location exists
     location_lower = request.location.lower()
     if location_lower not in data_columns:
         raise HTTPException(status_code=400, detail=f"Location '{request.location}' not found.")
@@ -114,7 +104,5 @@ async def predict_house_price(request: HousePredictionRequest):
         bath=request.bath,
         bhk=request.bhk
     )
-
-# Run the application
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
