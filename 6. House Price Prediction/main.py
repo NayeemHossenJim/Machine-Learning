@@ -1,14 +1,42 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import pickle
 import json
 import numpy as np
 import uvicorn
 
+model = None
+data_columns = None
+locations = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    global model, data_columns, locations
+    try:
+        with open('banglore_home_prices_model.pickle', 'rb') as f:
+            model = pickle.load(f)
+        
+        with open('columns.json', 'r') as f:
+            data_columns = json.load(f)['data_columns']
+        
+        locations = data_columns[3:]
+        print("Model loaded successfully")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        raise e
+    
+    yield
+    
+    # Shutdown (cleanup if needed)
+    print("Shutting down...")
+
 app = FastAPI(
     title="Bangalore House Price Prediction API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -18,10 +46,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-model = None
-data_columns = None
-locations = None
 
 class HousePredictionRequest(BaseModel):
     location: str
@@ -39,21 +63,6 @@ class HousePredictionResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
-
-@app.on_event("startup")
-async def load_model():
-    global model, data_columns, locations
-    try:
-        with open('banglore_home_prices_model.pickle', 'rb') as f:
-            model = pickle.load(f)
-        
-        with open('columns.json', 'r') as f:
-            data_columns = json.load(f)['data_columns']
-        
-        locations = data_columns[3:]
-    except Exception as e:
-        print(f"Error loading model: {e}")
-        raise e
 
 def predict_price(location: str, sqft: float, bath: int, bhk: int) -> float:
     loc_index = -1

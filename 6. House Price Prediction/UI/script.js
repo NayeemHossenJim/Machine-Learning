@@ -76,7 +76,12 @@ function initializeApp() {
     populateLocations();
     setupEventListeners();
     addInteractiveEffects();
+    
+    // Check API health on startup and then periodically
     checkAPIHealth();
+    
+    // Set up periodic health checks every 30 seconds
+    setInterval(checkAPIHealth, 30000);
 }
 
 // Populate location dropdown
@@ -252,6 +257,10 @@ function addInteractiveEffects() {
     document.head.appendChild(style);
 }
 
+// Track API connection state
+let isFirstConnection = true;
+let lastApiStatus = null;
+
 // Check API health
 async function checkAPIHealth() {
     try {
@@ -262,13 +271,58 @@ async function checkAPIHealth() {
         const data = await response.json();
         console.log('API Health:', data);
         
-        if (!data.model_loaded) {
+        // Show API status in UI
+        showAPIStatus(data);
+        
+        // Only show notifications on status changes or first connection
+        if (!data.model_loaded && (lastApiStatus === null || lastApiStatus.model_loaded !== data.model_loaded)) {
             showNotification('Warning: ML model not loaded properly', 'warning');
+        } else if (data.model_loaded && isFirstConnection) {
+            showNotification('API connected successfully!', 'success');
+            isFirstConnection = false;
         }
+        
+        lastApiStatus = data;
     } catch (error) {
         console.error('API Health Check Failed:', error);
-        showNotification('API connection failed. Please ensure the server is running.', 'error');
+        showAPIStatus({ status: 'unhealthy', model_loaded: false });
+        
+        // Only show error notification if status changed
+        if (lastApiStatus === null || lastApiStatus.status !== 'unhealthy') {
+            showNotification('API connection failed. Please ensure the server is running.', 'error');
+        }
+        
+        lastApiStatus = { status: 'unhealthy', model_loaded: false };
     }
+}
+
+// Show API status in UI
+function showAPIStatus(data) {
+    // Create or update status indicator
+    let statusIndicator = document.getElementById('api-status');
+    if (!statusIndicator) {
+        statusIndicator = document.createElement('div');
+        statusIndicator.id = 'api-status';
+        statusIndicator.style.cssText = `
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+        document.body.appendChild(statusIndicator);
+    }
+    
+    const isHealthy = data.status === 'healthy' && data.model_loaded;
+    statusIndicator.textContent = `API: ${data.status.toUpperCase()} | Model: ${data.model_loaded ? 'LOADED' : 'NOT LOADED'}`;
+    statusIndicator.style.background = isHealthy ? 
+        'linear-gradient(135deg, #00f5ff, #0080ff)' : 
+        'linear-gradient(135deg, #ff4444, #ff8800)';
+    statusIndicator.style.color = 'white';
 }
 
 // Handle form submission
@@ -345,8 +399,14 @@ async function makePrediction(data) {
     });
     
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorMessage;
+        } catch (parseError) {
+            console.error('Error parsing error response:', parseError);
+        }
+        throw new Error(errorMessage);
     }
     
     return await response.json();
