@@ -49,13 +49,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount the frontend folder as static files
-app.mount("/static", StaticFiles(directory="UI"), name="static")
-# Serve index.html at root
-@app.get("/")
-def read_index():
-    return FileResponse("UI/index.html")
-
 class HousePredictionRequest(BaseModel):
     location: str
     sqft: float
