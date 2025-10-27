@@ -6,6 +6,8 @@ import pickle
 import json
 import numpy as np
 import uvicorn
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 model = None
 data_columns = None
@@ -46,6 +48,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount the frontend folder as static files
+app.mount("/static", StaticFiles(directory="UI"), name="static")
+# Serve index.html at root
+@app.get("/")
+def read_index():
+    return FileResponse("UI/index.html")
 
 class HousePredictionRequest(BaseModel):
     location: str
